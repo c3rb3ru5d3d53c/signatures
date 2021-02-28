@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import json
+import hashlib
+import requests
+import argparse
+
+__author__ = "@c3rb3ru5d3d53c"
+
+context = [
+    'dropped_by_md5',
+    'dropped_by_sha256',
+    'dropped_by_malware',
+    'dropping_md5',
+    'dropping_sha256',
+    'dropping_malware',
+    'comment'
+]
+
+delivery_methods = [
+    'email_attachment',
+    'email_link',
+    'web_download',
+    'web_drive-by',
+    'multiple',
+    'other'
+]
+
+references = [
+    'urlhaus',
+    'any_run',
+    'joe_sandbox',
+    'malpedia',
+    'twitter',
+    'links'
+]
+
+parser = argparse.ArgumentParser(
+    prog="bazaarupload",
+    description='MalwareBazaar Upload Utility TLP:WHITE',
+    epilog="Author: {author}".format(author=__author__)
+)
+parser.add_argument(
+    '-f',
+    '--file',
+    help='File to Upload',
+    type=str,
+    metavar="FILE",
+    required=True
+)
+parser.add_argument(
+    '-t',
+    '--tags',
+    nargs='+',
+    help="Tags",
+    type=str,
+    required=False
+)
+parser.add_argument(
+    '-k',
+    '--key',
+    help="API Key",
+    type=str,
+    required=True
+)
+parser.add_argument(
+    '-r',
+    '--references',
+    nargs="+",
+    help="Reference Links {references}".format(references=references),
+    type=str,
+    required=False
+)
+parser.add_argument(
+    '-d',
+    '--delivery-method',
+    choices=delivery_methods,
+    help="Sample Delivery Method",
+    type=str,
+    required=False
+)
+parser.add_argument(
+    '-c',
+    '--context',
+    nargs="+",
+    help="Sample Context {context}".format(context=context)
+)
+parser.add_argument(
+    '-a',
+    '--anonymous',
+    default=False,
+    action='store_true',
+    help='Enable Anonymous Submission'
+)
+
+args = parser.parse_args()
+
+data = {}
+
+if args.tags:
+    data['tags'] = args.tags
+
+if args.references:
+    data['references'] = {}
+    for i in range(0, len(args.references)):
+        if args.references[i] in references:
+            if args.references[i] not in data['references']:
+                data['references'][args.references[i]] = []
+            if i+1 < len(args.references):
+                data['references'][args.references[i]].append(args.references[i+1])
+                for j in range(i+2, len(args.references)):
+                    if args.references[j] not in references:
+                        data['references'][args.references[i]].append(args.references[j])
+                    else:
+                        break
+    
+
+if args.context:
+    data['context'] = {}
+    for i in range(0, len(args.context)):
+        if args.context[i] in context:
+            if args.context[i] == 'comment':
+                if i+1 < len(args.context):
+                    data['context'][args.context[i]] = args.context[i+1]
+                    i = i + 1
+                    continue
+            if args.context[i] not in data['context']:
+                data['context'][args.context[i]] = []
+            if i+1 < len(args.context):
+                data['context'][args.context[i]].append(args.context[i+1])
+                for j in range(i+2, len(args.context)):
+                    if args.context[j] not in context:
+                        data['context'][args.context[i]].append(args.context[j])
+                    else:
+                        break
+
+if args.delivery_method:
+    data['delivery_method'] = args.delivery_method
+
+if args.anonymous is True:
+    data['anonymous'] = 1
+else:
+    data['anonymous'] = 0
+
+response = requests.post(
+    url='https://mb-api.abuse.ch/api/v1/',
+    headers={
+        'API-KEY': args.key
+    },
+    files={
+        'json_data': (None, json.dumps(data), 'application/json'),
+        'file': (open(args.file,'rb'))
+    }
+)
+
+data = json.loads(response.text)
+f = open(args.file, 'rb')
+data['url'] = "https://bazaar.abuse.ch/sample/" + hashlib.sha256(f.read()).hexdigest() + "/"
+f.close()
+
+print(json.dumps(data, indent=4))
