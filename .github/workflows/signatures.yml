@@ -38,7 +38,9 @@ jobs:
     - name: Build
       run: |
         make yara-docker version=yara-4.2.0
+        make yara-docker version=yara-4.2.1
         make yara-docker-build version=yara-4.2.0
+        make yara-bump-build source_version=yara-4.2.0 target_version=yara-4.2.1
         make package
 
     - name: Upload artifacts
