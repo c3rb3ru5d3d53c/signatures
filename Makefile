@@ -34,6 +34,19 @@ yara-docker-build:
 		-v ${PWD}/:/mnt/ \
 		-t signatures:${version} bash -c "cd /mnt/; make yara-build version=${version}";
 
+yara-stats: check-version
+	@mkdir -p dist/
+	@find signatures/ -type f -name "*.${version}.yara" | while read i; do \
+		scripts/yara/stats.sh $${i}; \
+	done | tee -a dist/stats.csv
+
+yara-docker-stats:
+	@docker run \
+		-u ${USER_ID}:${GROUP_ID} \
+		--rm \
+		-v ${PWD}/:/mnt/ \
+		-t signatures:${version} bash -c "cd /mnt/; make yara-stats version=${version}";
+
 package:
 	@find dist/ -mindepth 2 -maxdepth 2 -type d | while read i; do \
 		tar -czvf `dirname $${i}`/`basename $${i}`.tar.gz $${i}; \
