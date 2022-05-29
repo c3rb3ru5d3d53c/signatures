@@ -30,7 +30,6 @@ jobs:
     - name: Set up Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get upgrade
         sudo apt-get install -y jq parallel make
 
     - name: Setup Docker
