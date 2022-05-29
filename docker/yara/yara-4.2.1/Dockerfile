@@ -26,7 +26,7 @@ WORKDIR /opt/
 RUN tar -xzvf yara-4.2.1.tar.gz
 WORKDIR /opt/yara-4.2.1/
 RUN ./bootstrap.sh
-RUN ./configure --enable-dotnet --enable-macho --enable-magic --enable-dex
+RUN ./configure --enable-macho --enable-magic --enable-dex
 RUN make -j ${threads}
 RUN make install
 RUN ldconfig
