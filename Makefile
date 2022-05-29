@@ -59,6 +59,25 @@ sigma-build: check-version
 		echo "echo '[-] netwitness $${i}'; sigmac -t netwitness -c docker/sigma/${version}/etc/sigma/config/netwitness.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.netwitness\.sigma/'`; echo '[*] netwitness $${i}';";\
 	done | parallel --halt now,fail=1 -u -j ${threads} {}
 
+sigma-bump-build: check-target-version check-source-version
+	@echo "---sigma-build---"
+	@mkdir -p build/sigma/${target_version}/
+	@find signatures/ -type f -name "*.${source_version}.yml" | while read i; do \
+		echo "[-] copy $${i}"; \
+		mkdir -p build/sigma/${target_version}/`dirname $${i}`/; \
+		cp $${i} build/sigma/${target_version}/`dirname $${i}`/`basename $${i}`; \
+		echo "[*] copy $${i}"; \
+	done
+	@find signatures/ -type f -name "*.${source_version}.yml" | while read i; do \
+		echo "echo '[-] logpoint $${i}'; sigmac -t logpoint -c docker/sigma/${target_version}/etc/sigma/config/logpoint-windows.yml $${i} --output build/sigma/${target_version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.logpoint\.sigma/'`; echo '[*] logpoint $${i}';";\
+		echo "echo '[-] arcsight $${i}'; sigmac -t arcsight -c docker/sigma/${target_version}/etc/sigma/config/arcsight.yml $${i} --output build/sigma/${target_version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.arcsight\.sigma/'`; echo '[*] arcsight $${i}';";\
+		echo "echo '[-] carbonblack $${i}'; sigmac -t carbonblack -c docker/sigma/${target_version}/etc/sigma/config/carbon-black.yml $${i} --output build/sigma/${target_version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.carbonblack\.sigma/'`; echo '[*] carbonblack $${i}';";\
+		echo "echo '[-] crowdstrike $${i}'; sigmac -t crowdstrike -c docker/sigma/${target_version}/etc/sigma/config/crowdstrike.yml $${i} --output build/sigma/${target_version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.crowdstrike\.sigma/'`; echo '[*] crowdstrike $${i}';";\
+		echo "echo '[-] qradar $${i}'; sigmac -t qradar -c docker/sigma/${target_version}/etc/sigma/config/qradar.yml $${i} --output build/sigma/${target_version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.qradar\.sigma/'`; echo '[*] qradar $${i}';";\
+		echo "echo '[-] stix $${i}'; sigmac -t stix -c docker/sigma/${target_version}/etc/sigma/config/stix2.0.yml $${i} --output build/sigma/${target_version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.stix\.sigma/'`; echo '[*] stix $${i}';";\
+		echo "echo '[-] netwitness $${i}'; sigmac -t netwitness -c docker/sigma/${target_version}/etc/sigma/config/netwitness.yml $${i} --output build/sigma/${target_version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.netwitness\.sigma/'`; echo '[*] netwitness $${i}';";\
+	done | parallel --halt now,fail=1 -u -j ${threads} {}
+
 sigma-docker-build: check-version
 	@echo "---suricata-docker-test---"
 	@docker run \
@@ -66,6 +85,26 @@ sigma-docker-build: check-version
 		--rm \
 		-v ${PWD}/:/mnt/ \
 		-t signatures:${version} bash -c "cd /mnt/; make sigma-build version=${version} threads=${threads}";
+
+sigma-docker-bump-build: check-target_version
+	@echo "---suricata-docker-test---"
+	@docker run \
+		-u ${USER_ID}:${GROUP_ID} \
+		--rm \
+		-v ${PWD}/:/mnt/ \
+		-t signatures:${target_version} bash -c "cd /mnt/; make sigma-build source_version=${source_version} target_version=${target_version} threads=${threads}";
+
+sigma-download: check-version
+	mkdir -p signatures/upstream/sigma/
+	cd /tmp/; \
+		rm -rf sigma/; \
+		git clone https://github.com/SigmaHQ/sigma.git; \
+		cd sigma/rules/; \
+		find . -type f -name "*.yml" | while read i; do \
+			mkdir -p ${PWD}/signatures/upstream/sigma/`dirname $${i}`/; \
+			cp $${i} ${PWD}/signatures/upstream/sigma/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.${version}.yml/'`; \
+		done; \
+		rm -rf sigma/
 
 suricata-docker: check-version
 	@echo "---suricata-docker---"
@@ -214,9 +253,13 @@ package: package-targets
 		tar --remove-files -czvf signatures.tar.gz signatures/; \
 		mv signatures.tar.gz ${PWD}/build/signatures.tar.gz;
 
-clean:
+clean: clean-upstream
 	@echo "---clean---"
-	rm -rf build/
+	@rm -rf build/
+
+clean-upstream:
+	@echo "---clean-upstream---"
+	@rm -rf signatures/upstream/
 
 clean-docker:
 	@echo "---clean-docker---"

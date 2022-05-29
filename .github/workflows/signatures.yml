@@ -30,7 +30,7 @@ jobs:
     - name: Set up Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y jq parallel make
+        sudo apt-get install -y jq parallel make git
 
     - name: Setup Docker
       uses: docker-practice/actions-setup-docker@master
@@ -45,7 +45,8 @@ jobs:
         make yara-docker-bump-build source_version=yara-4.2.0 target_version=yara-4.2.1
         make suricata-docker-build version=suricata-6.0.5
         make suricata-docker-test version=suricata-6.0.5
-        make sigma-docker-build version=sigma-0.21 threads=4
+        make sigma-download version=0.21
+        make sigma-docker-build version=sigma-0.21 threads=8
         make stats-init
         make stats-yara version=yara-4.2.0
         make stats-final
@@ -53,5 +54,7 @@ jobs:
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
-      path: |
-        build/**/*.tar.gz
+      with:
+        name: ${{ github.event.repository.name }}
+        path: |
+          build/**/*.tar.gz
