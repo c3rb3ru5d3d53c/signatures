@@ -29,9 +29,9 @@ jobs:
 
     - name: Set up Dependencies
       run: |
-        apt-get update
-        apt-get upgrade
-        apt-get install -y jq parallel make
+        sudo apt-get update
+        sudo apt-get upgrade
+        sudo apt-get install -y jq parallel make
 
     - name: Setup Docker
       uses: docker-practice/actions-setup-docker@master
