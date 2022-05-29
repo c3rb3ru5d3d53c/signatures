@@ -1,0 +1,32 @@
+id: e7a91e9c-9e51-4448-b36a-cdadfc1985b8
+title: HEURISTIC Microsoft Office Creating Suspicious Process
+description: Detects suspicious processes created from microsoft office products.
+reference: https://docs.microsoft.com/en-us/microsoft-365/security/intelligence/macro-malware?view=o365-worldwide
+author: c3rb3ru5d3d53c
+created: 2022-05-29
+type: heuristic
+os: windows
+tlp: white
+rev: 1
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_0:
+    Image|endswith:
+      - 'regsvr32'
+      - 'wscript'
+      - 'cscript'
+      - 'rundll32'
+      - 'msiexec'
+      - 'mshta'
+      - 'verclsid'
+      - 'msdt'
+  selection_1:
+    ParentImage|endswith:
+      - excel.exe
+      - winword.exe
+      - powerpnt.exe
+  condition: selection_0 and selection_1
+falsepositives:
+  - Unknown

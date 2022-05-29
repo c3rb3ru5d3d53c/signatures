@@ -32,6 +32,41 @@ check-target-version:
 		exit 1; \
 	fi
 
+sigma-docker: check-version
+	@echo "---sigma-docker---"
+	@if [ -z "`docker images -q signatures:${version} 2> /dev/null`" ]; then \
+		docker build --build-arg threads=${threads} -t signatures:${version} docker/sigma/${version}/; \
+	else \
+		echo "[*] docker image for ${version} already built"; \
+	fi
+
+sigma-build: check-version
+	@echo "---sigma-build---"
+	@mkdir -p build/sigma/${version}/
+	@find signatures/ -type f -name "*.sigma-0.21.yml" | while read i; do \
+		echo "[-] copy $${i}"; \
+		mkdir -p build/sigma/${version}/`dirname $${i}`/; \
+		cp $${i} build/sigma/${version}/`dirname $${i}`/`basename $${i}`; \
+		echo "[*] copy $${i}"; \
+	done
+	@find signatures/ -type f -name "*.${version}.yml" | while read i; do \
+		echo "echo '[-] logpoint $${i}'; sigmac -t logpoint -c docker/sigma/${version}/etc/sigma/config/logpoint-windows.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.logpoint\.sigma/'`; echo '[*] logpoint $${i}';";\
+		echo "echo '[-] arcsight $${i}'; sigmac -t arcsight -c docker/sigma/${version}/etc/sigma/config/arcsight.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.arcsight\.sigma/'`; echo '[*] arcsight $${i}';";\
+		echo "echo '[-] carbonblack $${i}'; sigmac -t carbonblack -c docker/sigma/${version}/etc/sigma/config/carbon-black.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.carbonblack\.sigma/'`; echo '[*] carbonblack $${i}';";\
+		echo "echo '[-] crowdstrike $${i}'; sigmac -t crowdstrike -c docker/sigma/${version}/etc/sigma/config/crowdstrike.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.crowdstrike\.sigma/'`; echo '[*] crowdstrike $${i}';";\
+		echo "echo '[-] qradar $${i}'; sigmac -t qradar -c docker/sigma/${version}/etc/sigma/config/qradar.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.qradar\.sigma/'`; echo '[*] qradar $${i}';";\
+		echo "echo '[-] stix $${i}'; sigmac -t stix -c docker/sigma/${version}/etc/sigma/config/stix2.0.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.stix\.sigma/'`; echo '[*] stix $${i}';";\
+		echo "echo '[-] netwitness $${i}'; sigmac -t netwitness -c docker/sigma/${version}/etc/sigma/config/netwitness.yml $${i} --output build/sigma/${version}/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.netwitness\.sigma/'`; echo '[*] netwitness $${i}';";\
+	done | parallel --halt now,fail=1 -u -j ${threads} {}
+
+sigma-docker-build: check-version
+	@echo "---suricata-docker-test---"
+	@docker run \
+		-u ${USER_ID}:${GROUP_ID} \
+		--rm \
+		-v ${PWD}/:/mnt/ \
+		-t signatures:${version} bash -c "cd /mnt/; make sigma-build version=${version} threads=${threads}";
+
 suricata-docker: check-version
 	@echo "---suricata-docker---"
 	@if [ -z "`docker images -q signatures:${version} 2> /dev/null`" ]; then \
