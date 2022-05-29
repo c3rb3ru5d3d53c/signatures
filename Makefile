@@ -11,6 +11,13 @@ check-version:
 		exit 1; \
 	fi
 
+check-config:
+	@echo "---check-config---"
+	@if [ -z "${config}" ]; then \
+		echo "[x] config parameter required" 1>&2; \
+		exit 1; \
+	fi
+
 check-source-version:
 	@echo "---check-source-version---"
 	@if [ -z "${source_version}" ]; then \
@@ -25,12 +32,56 @@ check-target-version:
 		exit 1; \
 	fi
 
+suricata-docker: check-version
+	@echo "---suricata-docker---"
+	@if [ -z "`docker images -q signatures:${version} 2> /dev/null`" ]; then \
+		docker build --build-arg threads=${threads} -t signatures:${version} docker/suricata/${version}/; \
+	else \
+		echo "[*] docker image for ${version} already built"; \
+	fi
+
+suricata-build: check-version
+	@echo "---suricata-build---"
+	@mkdir -p build/suricata/${version}/lua/
+	@rm -f build/suricata/${version}/signatures.rules
+	@find signatures/ -type f -name "*.${version}.lua" | while read i; do \
+		echo "[-] $${i}"; \
+		cp -n $${i} build/suricata/${version}/lua/`basename $${i}` || (echo "[x] ${version} file collision" 1>&2; exit 1); \
+		echo "[*] $${i}"; \
+	done
+	@find signatures/ -type f -name "*.${version}.rules" | while read i; do \
+		echo "[-] $${i}"; \
+		mkdir -p build/suricata/${version}/`dirname $${i}`; \
+		cp $${i} build/suricata/${version}/`dirname $${i}`/`basename $${i}`; \
+		cat $${i} >> build/suricata/${version}/signatures.rules; \
+		echo "[*] $${i}"; \
+	done
+
+suricata-test: check-version check-config
+	@echo "---suricata-test---"
+	@suricata -T -vv --init-errors-fatal -c ${config} -S build/suricata/${version}/signatures.rules || exit 1
+
+suricata-docker-test: check-version
+	@echo "---suricata-docker-test---"
+	@docker run \
+		--rm \
+		-v ${PWD}/:/mnt/ \
+		-t signatures:${version} bash -c "cd /mnt/; make suricata-test version=${version} config=/etc/suricata/suricata.yaml";
+
+suricata-docker-build: check-version
+	@echo "---suricata-docker-build---"
+	@docker run \
+		-u ${USER_ID}:${GROUP_ID} \
+		--rm \
+		-v ${PWD}/:/mnt/ \
+		-t signatures:${version} bash -c "cd /mnt/; make suricata-build version=${version}";
+
 yara-docker: check-version
 	@echo "---yara-docker---"
 	@if [ -z "`docker images -q signatures:${version} 2> /dev/null`" ]; then \
 		docker build --build-arg threads=${threads} -t signatures:${version} docker/yara/${version}/; \
 	else \
-		echo "[*] docker image for ${version} already completed"; \
+		echo "[*] docker image for ${version} already built"; \
 	fi
 
 yara-build: check-version
@@ -45,7 +96,7 @@ yara-build: check-version
 	@cd build/yara/${version}/ && \
     	yarac --fail-on-warnings signatures.${version}.yara signatures.${version}.yarac
 
-yara-docker-build:
+yara-docker-build: check-version
 	@echo "---yara-docker-build---"
 	@docker run \
 		-u ${USER_ID}:${GROUP_ID} \
@@ -67,7 +118,7 @@ yara-bump-build: check-source-version check-target-version
 	@cd build/yara/${target_version}/ && \
 			yarac --fail-on-warnings signatures.${target_version}.yara signatures.${target_version}.yarac
 
-yara-docker-bump-build:
+yara-docker-bump-build: check-target-version
 	@echo "---yara-docker-bump-build---"
 	@docker run \
 		-u ${USER_ID}:${GROUP_ID} \
@@ -89,7 +140,7 @@ stats-yara: check-version
 stats-final:
 	@cat build/stats.csv | python -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' > build/stats.json
 
-yara-docker-stats:
+yara-docker-stats: check-version
 	@echo "---yara-docker-stats---"
 	@docker run \
 		-u ${USER_ID}:${GROUP_ID} \

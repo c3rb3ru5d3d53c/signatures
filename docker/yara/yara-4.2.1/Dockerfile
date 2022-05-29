@@ -30,7 +30,7 @@ RUN ./configure --enable-macho --enable-magic --enable-dex
 RUN make -j ${threads}
 RUN make install
 RUN ldconfig
-WORKDIR /opt/
+WORKDIR /mnt/
 # RUN tar -xzvf yara-python-4.2.1.tar.gz
 # WORKDIR /opt/yara-python-4.2.1/
 # RUN python3 setup.py build --dynamic-linking

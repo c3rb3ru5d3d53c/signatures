@@ -37,10 +37,13 @@ jobs:
 
     - name: Build
       run: |
-        make yara-docker version=yara-4.2.0
-        make yara-docker version=yara-4.2.1
+        make yara-docker version=yara-4.2.0 threads=4
+        make yara-docker version=yara-4.2.1 threads=4
+        make suricata-docker version=suricata-6.0.5 threads=4
         make yara-docker-build version=yara-4.2.0
         make yara-docker-bump-build source_version=yara-4.2.0 target_version=yara-4.2.1
+        make suricata-docker-build version=suricata-6.0.5
+        make suricata-docker-test version=suricata-6.0.5
         make stats-init
         make stats-yara version=yara-4.2.0
         make stats-final

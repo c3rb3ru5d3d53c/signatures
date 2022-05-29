@@ -35,3 +35,4 @@ RUN tar -xzvf yara-python-4.2.0.tar.gz
 WORKDIR /opt/yara-python-4.2.0/
 RUN python3 setup.py build --dynamic-linking
 RUN python3 setup.py install
+WORKDIR /mnt/
