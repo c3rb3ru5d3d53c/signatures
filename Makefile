@@ -47,10 +47,17 @@ yara-docker-stats:
 		-v ${PWD}/:/mnt/ \
 		-t signatures:${version} bash -c "cd /mnt/; make yara-stats version=${version}";
 
-package:
+package-targets:
 	@find dist/ -mindepth 2 -maxdepth 2 -type d | while read i; do \
 		tar -czvf `dirname $${i}`/`basename $${i}`.tar.gz $${i}; \
 	done
+
+package: package-targets
+	@cp -r dist/ /tmp/signatures/;
+	@mkdir -p dist/
+	@cd /tmp/; \
+		tar --remove-files -czvf signatures.tar.gz signatures/; \
+		mv signatures.tar.gz ${PWD}/dist/signatures.tar.gz;
 
 clean:
 	rm -rf dist/

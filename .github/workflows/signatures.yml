@@ -1,0 +1,50 @@
+name: signatures
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - ubuntu-latest
+        include:
+          - target: ubuntu-latest
+            os: ubuntu-latest
+            build-type: Release
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        lfs: false
+        submodules: false
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.8.10'
+
+    - name: Set up Dependencies
+      run: |
+        apt-get update
+        apt-get upgrade
+        apt-get install -y jq parallel make
+
+    - name: Setup Docker
+      uses: docker-practice/actions-setup-docker@master
+
+    - name: Build
+      run: |
+        make yara-docker version=yara-4.2.0
+        make yara-docker-build version=yara-4.2.0
+        make package
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ github.event.repository.name }}
+        path: |
+          build/**/*.tar.gz
