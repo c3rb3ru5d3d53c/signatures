@@ -75,12 +75,19 @@ yara-docker-bump-build:
 		-v ${PWD}/:/mnt/ \
 		-t signatures:${target_version} bash -c "cd /mnt/; make yara-bump-build source_version=${source_version} target_version=${target_version}";
 
-yara-stats: check-version
+stats-init:
+	@mkdir -p build/
+	@echo "created,updated,target,os,type,tlp,author,description,file" > build/stats.csv
+
+stats-yara: check-version
 	@echo "---yara-stats---"
 	@mkdir -p build/
 	@find signatures/ -type f -name "*.${version}.yara" | while read i; do \
 		scripts/yara/stats.sh $${i}; \
 	done | tee -a build/stats.csv
+
+stats-final:
+	@cat build/stats.csv | python -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' > build/stats.json
 
 yara-docker-stats:
 	@echo "---yara-docker-stats---"
