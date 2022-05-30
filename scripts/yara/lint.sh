@@ -18,9 +18,9 @@ yara --negate --print-meta $1 ${EMPTY_FILE} | while read i; do
         echo "[x] $signature $1 $result is not a valid type"
         STATE=1
     fi
-    result=$(echo $i | grep -Po '(?<=rev=)[^",\]]+' | head -1);
+    result=$(echo $i | grep -Po '((?<=rev=)[^",\]]+|(?<=rev =)[^",\]]+)' | head -1);
     if [ -z `echo ${result} | grep -P '^\d+$'` ]; then
-        echo "[x] $signature $1 $result is not a valid rev number"
+        echo "[x] $signature $1 $result not a valid revision number"
         STATE=1
     fi
     result=$(echo $i | grep -Po '(?<=updated=")[^",]+' | head -1)
