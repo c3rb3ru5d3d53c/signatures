@@ -40,6 +40,7 @@ jobs:
         make yara-docker version=yara-4.2.0 threads=4
         make yara-docker version=yara-4.2.1 threads=4
         make suricata-docker version=suricata-6.0.5 threads=4
+        make sigma-docker version=sigma-0.20 threads=4
         make sigma-docker version=sigma-0.21 threads=4
         make yara-docker-build version=yara-4.2.0
         make yara-docker-bump-build source_version=yara-4.2.0 target_version=yara-4.2.1
