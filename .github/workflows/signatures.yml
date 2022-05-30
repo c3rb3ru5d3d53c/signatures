@@ -45,8 +45,8 @@ jobs:
         make yara-docker-bump-build source_version=yara-4.2.0 target_version=yara-4.2.1
         make suricata-docker-build version=suricata-6.0.5
         make suricata-docker-test version=suricata-6.0.5
-        make sigma-download version=sigma-0.21
-        make sigma-docker-build version=sigma-0.21 threads=8
+        make sigma-docker-build version=sigma-0.20 threads=8
+        make sigma-docker-bump-build source_version=sigma-0.20 target_version=sigma-0.21 threads=4
         make stats-init
         make stats-yara version=yara-4.2.0
         make stats-final
@@ -58,3 +58,5 @@ jobs:
         name: ${{ github.event.repository.name }}
         path: |
           build/**/*.tar.gz
+
+# make sigma-download version=sigma-0.21

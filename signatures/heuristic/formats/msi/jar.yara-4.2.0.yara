@@ -6,7 +6,7 @@ rule heuristic_signed_msi_with_embedded_jar_0 {
         reference   = "https://www.securityinbits.com/malware-analysis/interesting-tactic-by-ratty-adwind-distribution-of-jar-appended-to-signed-msi/"
         created     = "2020-06-30"
         os          = "windows"
-        type        = "other"
+        type        = "heuristic"
         tlp         = "white"
         rev         = 1
     strings:

@@ -43,7 +43,7 @@ sigma-docker: check-version
 sigma-build: check-version
 	@echo "---sigma-build---"
 	@mkdir -p build/sigma/${version}/
-	@find signatures/ -type f -name "*.sigma-0.21.yml" | while read i; do \
+	@find signatures/ -type f -name "*.${version}.yml" | while read i; do \
 		echo "[-] copy $${i}"; \
 		mkdir -p build/sigma/${version}/`dirname $${i}`/; \
 		cp $${i} build/sigma/${version}/`dirname $${i}`/`basename $${i}`; \
@@ -86,13 +86,13 @@ sigma-docker-build: check-version
 		-v ${PWD}/:/mnt/ \
 		-t signatures:${version} bash -c "cd /mnt/; make sigma-build version=${version} threads=${threads}";
 
-sigma-docker-bump-build: check-target_version
-	@echo "---suricata-docker-test---"
+sigma-docker-bump-build: check-target-version
+	@echo "---sigma-docker-bump-build---"
 	@docker run \
 		-u ${USER_ID}:${GROUP_ID} \
 		--rm \
 		-v ${PWD}/:/mnt/ \
-		-t signatures:${target_version} bash -c "cd /mnt/; make sigma-build source_version=${source_version} target_version=${target_version} threads=${threads}";
+		-t signatures:${target_version} bash -c "cd /mnt/; make sigma-bump-build source_version=${source_version} target_version=${target_version} threads=${threads}";
 
 sigma-download: check-version
 	mkdir -p signatures/upstream/sigma/
@@ -158,7 +158,13 @@ yara-docker: check-version
 		echo "[*] docker image for ${version} already built"; \
 	fi
 
-yara-build: check-version
+yara-lint: check-version
+	@echo "---yara-lint---"
+	@ find signatures/ -type f -name "*.${version}.yara" | while read i; do \
+		echo "./scripts/yara/lint.sh $${i};"; \
+	done | parallel --halt now,fail=1 -u -j ${threads} {}
+
+yara-build: check-version yara-lint
 	@echo "---yara-build---"
 	@mkdir -p build/yara/${version}/
 	@rm -f build/yara/${version}/signatures.${version}.yara

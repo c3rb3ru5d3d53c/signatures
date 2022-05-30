@@ -16,3 +16,4 @@ RUN tar -xzvf sigma-0.20.tar.gz
 WORKDIR /opt/sigma-0.20/tools/
 RUN pip3 install --trusted-host pypi.org setuptools
 RUN python3 setup.py install
+WORKDIR /mnt/

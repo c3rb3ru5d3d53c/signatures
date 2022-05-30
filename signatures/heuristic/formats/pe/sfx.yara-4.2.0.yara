@@ -9,7 +9,7 @@ rule heuristic_pe_sfx_silent_installer_0 {
         created     = "2020-05-10"
         updated     = "2020-10-03"
         os          = "windows"
-        type        = "other"
+        type        = "heuristic"
         tlp         = "white"
         rev         = 2
      strings:
