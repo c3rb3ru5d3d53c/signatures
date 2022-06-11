@@ -1,0 +1,22 @@
+id: c6464540-25b3-4122-b408-32b5dc2e2915
+title: HEURISTIC WSL Suspicious Execution
+description: Detects suspicious execution of WSL
+reference: https://twitter.com/nas_bench/status/1535431474429808642
+author: c3rb3ru5d3d53c
+created: 2022-06-11
+type: heuristic.execution
+os: windows
+tlp: white
+rev: 1
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_0:
+    Image|endswith: '\wsl.exe'
+    CommandLine|contains:
+      - '--system'
+      - '/mnt/'
+  condition: selection_0
+falsepositives:
+  - Unknown
