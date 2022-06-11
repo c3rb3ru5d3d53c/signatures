@@ -32,6 +32,9 @@ check-target-version:
 		exit 1; \
 	fi
 
+sigma-id:
+	@uuidgen
+
 sigma-docker: check-version
 	@echo "---sigma-docker---"
 	@if [ -z "`docker images -q signatures:${version} 2> /dev/null`" ]; then \
