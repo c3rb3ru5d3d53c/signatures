@@ -13,12 +13,10 @@ logsource:
   category: process_creation
 detection:
   selection_0:
-    Image|endswith:
-      - '\wsl.exe'
-  selection_1:
+    Image|endswith: '\wsl.exe'
     CommandLine|contains:
       - '--system'
       - '/mnt/'
-  condition: selection_0 and selection_1
+  condition: selection_0
 falsepositives:
   - Unknown
