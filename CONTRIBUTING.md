@@ -41,6 +41,8 @@ Each of these categories can have subcategories for signature metadata such as `
 
 This is the signature style guidelines for `suricata`.
 
+Official Signature Docs: https://suricata.readthedocs.io/en/suricata-6.0.5/
+
 | Category  | Classtype        |
 | --------- | ---------------- |
 | malware   | trojan-activity  |
@@ -68,6 +70,6 @@ alert http $HOME_NET any -> $EXTERNAL_NET any (
 
 - When using `pcre` you must include a `fast_pattern`
 - `created` is required with a `rev` of `1`
-  - `updated` is required with a `rev` `>` `1`
+- `updated` is required with a `rev` `>` `1`
 - `reference` of type `url` is required
 - `sid` is required, use the placeholder `1`, `2`, `3`, etc, as the person merging your detection will assign the `sid`
