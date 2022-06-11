@@ -14,7 +14,7 @@ logsource:
 detection:
   selection_0:
     Image|endswith:
-      - 'wsl'
+      - '\wsl.exe'
   selection_1:
     CommandLine|contains:
       - '--system'
