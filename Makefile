@@ -79,7 +79,7 @@ sigma-bump-build: check-target-version check-source-version
 	done | parallel --halt now,fail=1 -u -j ${threads} {}
 
 sigma-docker-build: check-version
-	@echo "---suricata-docker-test---"
+	@echo "---sigma-docker-build---"
 	@docker run \
 		-u ${USER_ID}:${GROUP_ID} \
 		--rm \
@@ -105,6 +105,9 @@ sigma-download: check-version
 			cp $${i} ${PWD}/signatures/upstream/sigma/`dirname $${i}`/`basename $${i} | sed 's/\.yml$$/\.${version}.yml/'`; \
 		done; \
 		rm -rf sigma/
+
+suricata-sid: check-version
+	@echo `find signatures/ -type f -name "*.${version}.rules" | while read i; do grep -Po '(?<=sid:)\d+' $${i}; done | sort -rn | head -1`+1 | bc
 
 suricata-docker: check-version
 	@echo "---suricata-docker---"
