@@ -73,3 +73,7 @@ make package-targets
 ```bash
 make package
 ```
+
+## Contributing
+
+If you wish to submit your signatures to the repository please have a look at [CONTRIBUTING.md](CONTRIBUTING.md) for our style and contribution guidelines.
