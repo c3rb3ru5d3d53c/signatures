@@ -10,6 +10,10 @@
 
 This repository is designed to provide a way to create and distribute detection signatures easily.
 
+Get creative with your own detection solutions, completely unencumbered by license limitations.
+
+To help combat evil, we firmly commit our work to the public domain for the greater good of the world. :tada:
+
 ## Downloading Compiled Signatures
 
 - Sign-in to GitHub
