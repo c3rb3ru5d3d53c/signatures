@@ -16,10 +16,22 @@ This repository is designed to provide a way to create and distribute detection 
 - Go-to [actions](https://github.com/c3rb3ru5d3d53c/signatures/actions/)
 - Download the latest build from `master` branch
 
+## Dependencies
+
+```bash
+sudo apt update
+sudo apt install make parallel docker.io jq
+sudo usermod -a -G docker $USER
+sudo systemctl enable docker
+sudo reboot
+```
+
 ## Building Signatures
 
 - All signatures will be stored in `build/`
 - Bump builds use an existing build but compile with the target version
+- Multiple versions of anything can be supported!
+- Use CI/CD to make it your own
 
 ### Building Suricata Signatures
 
