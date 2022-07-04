@@ -1,0 +1,23 @@
+id: c2b9e035-f225-49f9-8161-776b64ab16d0
+title: HEURISTIC Suspicious Process Created in AppData Folder
+description: Detects suspicious startup files being created
+reference: https://c3rb3ru5d3d53c.io
+author: c3rb3ru5d3d53c
+created: 2022-06-30
+type: heuristic
+os: windows
+tlp: white
+rev: 1
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_0:
+    Image|contains:
+      - '\AppData\Local\'
+  selection_1:
+    Image|endswith:
+      - '\tmp.exe'
+  condition: selection_0 and selection_1
+falsepositives:
+  - Unknown
