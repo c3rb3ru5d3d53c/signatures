@@ -1,0 +1,23 @@
+id: eb65d88b-3f45-4ed4-bb51-23b39bbcf9e3
+title: HEURISTIC Suspicious Startup File Created
+description: Detects suspicious startup files being created
+reference: https://c3rb3ru5d3d53c.io/malware-blog/2022-07-04-bitter-apt-zxxz-backdoor
+author: c3rb3ru5d3d53c
+created: 2022-06-30
+type: heuristic
+os: windows
+tlp: white
+rev: 1
+logsource:
+  product: windows
+  category: file_event
+detection:
+  selection_0:
+    TargetFilename|contains:
+      - '\Start Menu\Programs\Startup\'
+  selection_1:
+    TargetFilename|endswith:
+      - '\update.LNK'
+  condition: selection_0 and selection_1
+falsepositives:
+  - Unknown
